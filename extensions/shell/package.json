@@ -1,0 +1,21 @@
+{
+  "package_version": 2,
+  "name": "cloud-wind",
+  "version": "1.0.0",
+  "author": "Cocos Creator",
+  "editor": ">=3.8.3",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "description": "cloud 核心库-依赖 ccc",
+  "devDependencies": {},
+  "contributions": {
+    "asset-db": {
+      "mount": {
+        "path": "./source",
+        "readonly": true
+      }
+    }
+  }
+}

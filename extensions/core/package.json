@@ -1,0 +1,21 @@
+{
+  "package_version": 2,
+  "name": "cloud-core",
+  "version": "1.0.0",
+  "author": "Cocos Creator",
+  "editor": ">=3.8.0",
+  "scripts": {
+    "build": "tsc -b",
+    "watch": "tsc -w"
+  },
+  "description": "cloud 核心库",
+  "devDependencies": {},
+  "contributions": {
+    "asset-db": {
+      "mount": {
+        "path": "./source",
+        "readonly": true
+      }
+    }
+  }
+}

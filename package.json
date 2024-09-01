@@ -1,0 +1,12 @@
+{
+  "name": "cloud",
+  "uuid": "f51d2232-819f-487e-b2de-9b79d505b0c4",
+  "creator": {
+    "version": "3.8.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "eslint": "^9.9.1"
+  }
+}
