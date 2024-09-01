@@ -2,6 +2,7 @@
  * @Author: doooreyn jl88744653@gmail.com
  * @Description: 对象池
  * @Todo: 需要进一步简化注册
+ * - 要方便初始化
  */
 
 import { be } from "./be";
