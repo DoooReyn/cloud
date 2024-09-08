@@ -10,6 +10,10 @@ import { dict } from "./dict";
 import { logger } from "./logger";
 import { singletons } from "./singleton";
 
+// 不管是任意类型还是特定类型，都需要注册，且提供初始化和反初始化接口
+// 对于特定类型，注册时只需要传入类即可
+// 对于任意类型，注册时需要传入初始化和反初始化方法（内部伪造一个类）
+
 export namespace pool {
   /** 对象池日志 */
   const log = logger.create("pool");
@@ -17,9 +21,9 @@ export namespace pool {
   /** 对象池节点 */
   export interface IPoolItem {
     /** 初始化 */
-    initialize(...args: any[]): void;
-    /** 重复使用 */
-    reuse(): void;
+    $init(...args: any[]): void;
+    /** 反初始化 */
+    $deinit(): void;
   }
 
   /** 对象池节点类 */
@@ -61,7 +65,7 @@ export namespace pool {
       }
 
       dict.set(item, "$pooling", true);
-      item.initialize();
+      item.$init();
 
       return item;
     }
@@ -73,7 +77,7 @@ export namespace pool {
     public recycle(cls: T) {
       if (be.truely(dict.get(cls, "$pooling"))) {
         dict.set(cls, "$pooling", false);
-        cls.reuse();
+        cls.$deinit();
         this.$recycle(cls);
         this.$collections.push(cls);
       } else {

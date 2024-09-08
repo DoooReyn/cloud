@@ -17,7 +17,7 @@ class TestLabel extends Node implements core.pool.IPoolItem {
     this.$lable = this.addComponent(Label);
   }
 
-  initialize(): void {
+  $init(): void {
     this.$lable.string = TestLabel.$cname + Date.now().toString();
     this.active = true;
     this.setPosition(
@@ -26,7 +26,7 @@ class TestLabel extends Node implements core.pool.IPoolItem {
     );
   }
 
-  reuse(): void {
+  $deinit(): void {
     this.$lable.string = "";
     this.active = false;
     this.removeFromParent();

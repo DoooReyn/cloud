@@ -34,7 +34,7 @@ export namespace singletons {
   /** 单例模式 */
   export interface ISingleton {
     new (): unknown;
-    $cname: string;
+    readonly $cname: string;
   }
 
   /** 存放所有单例的字典 */
