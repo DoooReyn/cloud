@@ -1,3 +1,11 @@
+/**
+ * @Author: Reyn jl88744653@gmail.com
+ * @Date: 2024-09-07 10:31:23
+ * @LastEditors: Reyn jl88744653@gmail.com
+ * @LastEditTime: 2024-09-22 10:17:58
+ * @FilePath: extensions/core/source/ pool-class.ts
+ * @Description: 这是默认设置,可以在设置》工具》File Description中进行配置
+ */
 import { be } from "./be";
 import { datetime } from "./datetime";
 import { dict } from "./dict";

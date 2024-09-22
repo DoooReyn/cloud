@@ -1,398 +1,183 @@
-/**
- * @Author: doooreyn jl88744653@gmail.com
- * @Description: 对象池
- * @Todo: 需要进一步简化注册
- * - 要方便初始化
- */
-
-import { be } from "./be";
 import { dict } from "./dict";
+import { scheduler } from "./scheduler";
+import { array } from "./array";
 import { logger } from "./logger";
-import { singletons } from "./singleton";
-
-// 不管是任意类型还是特定类型，都需要注册，且提供初始化和反初始化接口
-// 对于特定类型，注册时只需要传入类即可
-// 对于任意类型，注册时需要传入初始化和反初始化方法（内部伪造一个类）
 
 export namespace pool {
-  /** 对象池日志 */
-  const log = logger.create("pool");
 
-  /** 对象池节点 */
-  export interface IPoolItem {
-    /** 初始化 */
-    $init(...args: any[]): void;
-    /** 反初始化 */
-    $deinit(): void;
-  }
+    type FactoryClass = { new(): any };
+    type FactoryTemplate = () => any;
 
-  /** 对象池节点类 */
-  export type IPoolClazz<T extends IPoolItem> = {
-    readonly $cname: string;
-    new (): T;
-  };
+    class Factory {
+        /** 商品 */
+        private _classes: Map<string, FactoryClass>;
+        private _templates: Map<string, FactoryTemplate>;
 
-  /**
-   * 支持指定类的对象池工厂
-   */
-  class FactorySpecified<T extends IPoolItem> {
-    /** 对象列表 */
-    private $collections: T[];
-
-    /**
-     * 创建支持指定类的对象池
-     * @param $cls 类
-     * @param $acquire 创建方法
-     * @param $recycle 回收方法
-     */
-    public constructor(
-      public readonly $cls: IPoolClazz<T>,
-      private readonly $acquire: () => T,
-      private readonly $recycle: (cls: T) => void,
-    ) {
-      this.$collections = [];
-    }
-
-    /**
-     * 从池子中取出一个对象
-     */
-    public acquire() {
-      let item: T;
-      if (this.$collections.length) {
-        item = this.$collections.shift()!;
-      } else {
-        item = this.$acquire();
-      }
-
-      dict.set(item, "$pooling", true);
-      item.$init();
-
-      return item;
-    }
-
-    /**
-     * 将对象回收到池子
-     * @param cls 类实例
-     */
-    public recycle(cls: T) {
-      if (be.truely(dict.get(cls, "$pooling"))) {
-        dict.set(cls, "$pooling", false);
-        cls.$deinit();
-        this.$recycle(cls);
-        this.$collections.push(cls);
-      } else {
-        const $cname = dict.get(cls.constructor, "$cname");
-        log.warn($cname + " 不需要回收");
-      }
-    }
-
-    /**
-     * 清空池子
-     */
-    public clear() {
-      this.$collections.length = 0;
-    }
-
-    /**
-     * 获取池子中的对象数量
-     */
-    public count() {
-      return this.$collections.length;
-    }
-  }
-
-  /**
-   * 支持任意对象的对象池工厂
-   */
-  class FactoryAnything<T extends dict.IDict> {
-    /** 对象列表 */
-    private $collections: any[];
-
-    /**
-     * 创建支持任意对象的对象池
-     * @param $pname 池子标识
-     * @param $template 模板
-     * @param $acquire 创建方法
-     * @param $recycle 回收方法
-     */
-    public constructor(
-      public readonly $pname: string,
-      public readonly $template: T,
-      private readonly $acquire: () => T,
-      private readonly $recycle: (cls: T) => void,
-    ) {
-      this.$collections = [];
-    }
-
-    /**
-     * 从池子中取出一个对象
-     */
-    public acquire() {
-      let item: any;
-      if (this.$collections.length) {
-        item = this.$collections.shift()!;
-      } else {
-        item = this.$acquire();
-      }
-
-      dict.set(item, "$pname", this.$pname);
-      dict.set(item, "$pooling", true);
-
-      return item;
-    }
-
-    /**
-     * 将对象回收到池子
-     * @param cls 对象
-     */
-    public recycle(cls: T) {
-      const pname = dict.get(cls, "$pname");
-      if (pname === this.$pname) {
-        if (be.truely(dict.get(cls, "$pooling"))) {
-          dict.set(cls, "$pooling", false);
-          this.$recycle(cls);
-          this.$collections.push(cls);
-        } else {
-          log.warn(this.$pname + " 不需要回收");
+        constructor() {
+            this._classes = new Map();
+            this._templates = new Map();
         }
-      } else {
-        if (be.absent(pname)) {
-          log.warn("不是可回收对象", cls);
-        } else {
-          log.warn("回收的对象类型不匹配", pname, this.$pname);
+
+        register_class( tag: string, creator: FactoryClass ) {
+            if ( !this._classes.has( tag ) ) {
+                this._classes.set( tag, creator );
+            }
         }
-      }
-    }
 
-    /**
-     * 清空池子
-     */
-    public clear() {
-      this.$collections.length = 0;
-    }
-
-    /**
-     * 获取池子中的对象数量
-     */
-    public count() {
-      return this.$collections.length;
-    }
-  }
-
-  /** 指定类的对象池 */
-  class SpecifiedPool {
-    /** 指定池子管理器类型 */
-    public static readonly $cname = "@pool:specified";
-
-    /** 池子列表 */
-    private $pools: Record<string, FactorySpecified<any>> = dict.raw();
-
-    /**
-     * 是否有指定名称的池子
-     * @param pname 池子标识
-     */
-    private has(name: string) {
-      return dict.has(this.$pools, name);
-    }
-
-    /**
-     * 获取指定池子
-     * @param pname 池子标识
-     * @returns
-     */
-    private get<T extends IPoolItem>(
-      name: string,
-    ): FactorySpecified<T> | undefined {
-      return dict.get(this.$pools, name) as FactorySpecified<T>;
-    }
-
-    /**
-     * 注册池子
-     * @param cls 类
-     * @param $acquire 类实例创建方法
-     * @param $recycle 类实例回收方法
-     */
-    public inject<T extends IPoolItem>(
-      cls: IPoolClazz<T>,
-      $acquire: () => T,
-      $recycle: (cls: T) => void,
-    ) {
-      const $cname = cls.$cname;
-      if (be.literal($cname) && !this.has($cname)) {
-        dict.set(
-          this.$pools,
-          cls.$cname,
-          new FactorySpecified(cls, $acquire, $recycle),
-        );
-      } else {
-        log.warn("池子已经注册过了", $cname);
-      }
-    }
-
-    /**
-     * 注销池子
-     * @param cls 类
-     */
-    public eject(cls: IPoolItem) {
-      const $cname = dict.get(cls.constructor, "$cname");
-      if (be.literal($cname) && this.has($cname)) {
-        dict.del(this.$pools, $cname);
-      }
-    }
-
-    /**
-     * 从池子中取出一个对象
-     * @param cls 类
-     */
-    public acquire<T extends IPoolItem>(cls: IPoolClazz<T>) {
-      if (!this.has(cls.$cname)) {
-        throw new Error(`${cls.$cname} 池子未注册`);
-      }
-      return this.get<T>(cls.$cname)!.acquire();
-    }
-
-    /**
-     * 回收对象到池子
-     * @param cls 类实例对象
-     */
-    public recycle(cls: IPoolItem) {
-      const $cname = dict.get(cls.constructor, "$cname");
-      if (this.has($cname)) {
-        this.get($cname)!.recycle(cls);
-      }
-    }
-
-    /**
-     * 获取对象池对象数量
-     * @param cls 类
-     */
-    public count<T extends IPoolItem>(cls: IPoolClazz<T>) {
-      if (dict.has(this.$pools, cls.$cname)) {
-        this.get(cls.$cname)!.count();
-      }
-      return 0;
-    }
-  }
-
-  /**
-   * 任意对象的对象池
-   */
-  class AnythingPool {
-    /** 指定类名 */
-    public static readonly $cname = "@pool:anything";
-
-    /** 池子列表 */
-    private $pools: Record<string, FactoryAnything<dict.IDict>> = dict.raw();
-
-    /**
-     * 是否有指定名称的池子
-     * @param pname 池子标识
-     */
-    private has(pname: string) {
-      return dict.has(this.$pools, pname);
-    }
-
-    /**
-     * 获取指定池子
-     * @param pname 池子标识
-     * @returns
-     */
-    private get<T extends dict.IDict>(
-      pname: string,
-    ): FactoryAnything<T> | undefined {
-      return dict.get(this.$pools, pname) as FactoryAnything<T>;
-    }
-
-    /**
-     * 注册池子
-     * @param $pname 池子标识
-     * @param $template 对象模板
-     * @param $acquire 对象创建方法
-     * @param $recycle 对象回收方法
-     */
-    public inject<T extends dict.IDict>(
-      $pname: string,
-      $template: T,
-      $acquire: () => T,
-      $recycle: (cls: T) => void,
-    ) {
-      if (!this.has($pname)) {
-        dict.set(
-          this.$pools,
-          $pname,
-          new FactoryAnything($pname, $template, $acquire, $recycle),
-        );
-      } else {
-        log.warn($pname + " 已经注册过了");
-      }
-    }
-
-    /**
-     * 注销池子
-     * @param clsOrName 池子标识
-     */
-    public eject(clsOrName: string | dict.IDict) {
-      let pname: string;
-      if (be.literal(clsOrName)) {
-        pname = clsOrName;
-      } else {
-        pname = dict.get(clsOrName, "$pname");
-      }
-      if (pname) {
-        if (this.has(pname)) {
-          this.get(pname)!.clear();
-          dict.del(this.$pools, pname);
-        } else {
-          log.warn(`${pname} 未注册，不需要注销`);
+        register_template( tag: string, creator: FactoryTemplate ) {
+            if ( !this._templates.has( tag ) ) {
+                this._templates.set( tag, creator );
+            }
         }
-      } else {
-        log.warn("不是池子或未注册", clsOrName);
-      }
-    }
 
-    /**
-     * 从池子中取出一个对象
-     * @param $pname 池子标识
-     */
-    public acquire<T extends dict.IDict>($pname: string) {
-      if (!this.has($pname)) {
-        throw new Error(`${$pname} 未注册`);
-      }
-      return this.get<T>($pname)!.acquire() as T;
-    }
-
-    /**
-     * 回收对象到池子
-     * @param cls 对象
-     */
-    public recycle<T extends dict.IDict>(cls: T) {
-      const pname = dict.get(cls, "$pname");
-      if (be.literal(pname)) {
-        if (dict.has(this.$pools, pname)) {
-          this.get(pname)!.recycle(cls);
-        } else {
-          log.warn("未注册池子", pname, cls);
+        unregister( tag: string ) {
+            if ( this._templates.has( tag ) ) {
+                this._templates.delete( tag );
+            } else if ( this._classes.has( tag ) ) {
+                this._classes.delete( tag );
+            }
         }
-      } else {
-        log.warn("不是池子对象", cls);
-      }
+
+        generate( tag: string ) {
+            if ( this._classes.has( tag ) ) {
+                const creator = this._classes.get( tag )!;
+                return new creator();
+            }
+            if ( this._templates.has( tag ) ) {
+                const creator = this._templates.get( tag )!;
+                return creator();
+            }
+            return null;
+        }
     }
 
-    /**
-     * 获取对象池对象数量
-     * @param $pname 池子标识
-     */
-    public count($pname: string) {
-      if (dict.has(this.$pools, $pname)) {
-        return this.get($pname)!.count();
-      }
-      return 0;
+    export const factory = new Factory();
+
+    abstract class Pool {
+        private _items: any[];
+
+        constructor( public readonly tag: string ) {
+            this._items = [];
+        }
+
+        abstract create(): any;
+
+        acquire() {
+            let item;
+            if ( this._items.length ) {
+                item = this._items.shift()!;
+            } else {
+                item = this.create();
+            }
+
+            dict.del( item, "$recycle" );
+            dict.set( item, "$pool", this.tag );
+
+            return item;
+        }
+
+        recycle( item: any ) {
+            // 属于该对象池并且是未回收状态才可以被回收
+            if ( dict.get( item, "$pool" ) === this.tag && !dict.get( item, "$recycle" ) ) {
+                dict.set( item, "$recycle", true );
+                scheduler.next_frame( this, this._items.push, item ); // 延迟一帧回收
+            }
+        }
+
+        clear() {
+            array.remove_all( this._items, ( item ) => {
+                dict.del( item, "$recycle" );
+                dict.del( item, "$pool" );
+            } );
+        }
     }
-  }
 
-  /** 适用于类的对象池 */
-  export const specified = singletons.acquire<SpecifiedPool>(SpecifiedPool);
+    class PoolClass extends Pool {
+        constructor( public readonly tag: string, public readonly clazz: FactoryClass ) {
+            super( tag );
+        }
 
-  /** 适用于所有对象的对象池 */
-  export const anything = singletons.acquire<AnythingPool>(AnythingPool);
+        public create(): any {
+            return new this.clazz();
+        }
+    }
+
+    class PoolTemplate extends Pool {
+        constructor( public readonly tag: string, public readonly template: FactoryTemplate ) {
+            super( tag );
+        }
+
+        public create(): any {
+            return this.template();
+        }
+    }
+
+    class ObjectPool {
+        private _classes: Map<string, PoolClass>;
+        private _templates: Map<string, PoolTemplate>;
+
+        constructor() {
+            this._classes = new Map();
+            this._templates = new Map();
+        }
+
+        inject_clazz( tag: string, clazz?: FactoryClass ) {
+            if ( !this._classes.has( tag ) ) {
+                if ( clazz ) {
+                    this._classes.set( tag, new PoolClass( tag, clazz ) );
+                } else {
+                    logger.use( "pool" ).error( `tag:${ tag } 注册对象池需提供 clazz!` );
+                }
+            }
+        }
+
+        inject_template( tag: string, template?: FactoryTemplate ) {
+            if ( !this._templates.has( tag ) ) {
+                if ( template ) {
+                    this._templates.set( tag, new PoolTemplate( tag, template ) );
+                } else {
+                    logger.use( "pool" ).error( `tag:${ tag } 注册对象池需提供 template!` );
+                }
+            }
+        }
+
+        eject( tag: string ) {
+            if ( this._classes.has( tag ) ) {
+                this._classes.get( tag )!.clear();
+                this._classes.delete( tag );
+            } else if ( this._templates.has( tag ) ) {
+                this._templates.get( tag )!.clear();
+                this._templates.delete( tag );
+            }
+        }
+
+        acquire( tag: string ) {
+            if ( this._classes.has( tag ) ) {
+                return this._classes.get( tag )!.acquire();
+            } else if ( this._templates.has( tag ) ) {
+                return this._templates.get( tag )!.acquire();
+            }
+            logger.use( "pool" ).warn( `tag:${ tag } 对象池未注册！` );
+            return null;
+        }
+
+        recycle( item: any ) {
+            if ( !dict.has( item, "$pool" ) ) {
+                return logger.use( "pool" ).warn( "不是对象池对象", item );
+            }
+
+            const tag = dict.get( item, "$pool" );
+            if ( this._classes.has( tag ) ) {
+                this._classes.get( tag )!.recycle( item );
+            } else if ( this._templates.has( tag ) ) {
+                this._templates.get( tag )!.recycle( item );
+            } else {
+                logger.use( "pool" ).warn( `tag: ${ tag } 对象池可能已解散` );
+            }
+        }
+    }
+
+    export const pool = new ObjectPool();
+
+    // TODO 添加委托：创建时、回收时
 }
