@@ -8,13 +8,13 @@ import { datetime } from "./datetime";
 export namespace scheduler {
 
     /** 延迟回调 */
-    type NextHandler = ( ...args: any[] ) => any;
+    export type NextHandler = ( ...args: any[] ) => any;
     
     /** 重复回调 */
-    type RepeatHandler = ( current: number, total: number, ...args: any[] ) => any;
+    export type RepeatHandler = ( current: number, total: number, ...args: any[] ) => any;
     
     /** 永远 */
-    const REPEAT_FOREVER = -1;
+    export const REPEAT_FOREVER = -1;
     
     /** 运行中的定时器 */
     const timers: Map<number, boolean> = new Map();

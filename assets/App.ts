@@ -3,7 +3,7 @@
  * @Description: App 入口
  */
 
-import { _decorator, Component, instantiate, Label, Node, Color } from "cc";
+import { _decorator, Color, Component, instantiate, Label, Node } from "cc";
 import * as core from "core/exports";
 
 const { ccclass, property } = _decorator;
@@ -28,7 +28,7 @@ export class App extends Component {
             on_acquire: {
                 caller: this,
                 handler( node: Node ) {
-                    const tag = core.dict.get(node, "$pool");
+                    const tag = core.dict.get( node, "$pool" );
                     node.name = tag;
                     node.active = true;
                     node.getComponent( Label ).string = tag + "." + Date.now().toString();
@@ -66,11 +66,14 @@ export class App extends Component {
             const node2 = core.pool.factory.acquire( "label:clazz" );
             this.node.addChild( node2 );
 
-            this.scheduleOnce( () => {
-                core.pool.factory.recycle( node1 );
-                core.pool.factory.recycle( node2 );
-                test();
-            }, 1 );
+            core.timer.shared.next_second( {
+                                               caller: this,
+                                               handler() {
+                                                   core.pool.factory.recycle( node1 );
+                                                   core.pool.factory.recycle( node2 );
+                                                   test();
+                                               }
+                                           } );
         };
 
         test();

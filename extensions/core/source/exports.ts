@@ -16,5 +16,6 @@ export { logger } from "./logger";
 export { re } from "./re";
 export { runner } from "./runner";
 export { singletons } from "./singleton";
+export { timer } from "./timer";
 export { url } from "./url";
 export { pool } from "./pool";
