@@ -251,8 +251,10 @@ export namespace logger {
         use_color = color;
     }
 
-    /**
-     * 默认日志记录器
-     */
+    /** 默认日志记录器 */
     export const cloud = create( "cloud" );
+    /** 对象池日志记录器 */
+    export const pool = create( "pool" );
+    /** 任务日志记录器 */
+    export const task = create( "task" );
 }

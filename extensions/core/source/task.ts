@@ -63,7 +63,7 @@ export namespace task {
 
         public run() {
             if ( this._flag ) {
-                return logger.use( "task" ).warn( "任务已经运行了" );
+                return logger.task.warn( "任务已经运行了" );
             }
 
             this._state = "running";
@@ -113,11 +113,11 @@ export namespace task {
         }
 
         private start() {
-            logger.use( "task" ).debug( `步骤运行: ${ this.$step }` );
+            logger.task.debug( `步骤运行: ${ this.$step }` );
         }
 
         private next() {
-            logger.use( "task" ).debug( `步骤完成: ${ this.$step }` );
+            logger.task.debug( `步骤完成: ${ this.$step }` );
             if ( this.next_node ) {
                 this.next_node.run();
             }
@@ -162,7 +162,7 @@ export namespace task {
             let chain: string[] = [];
 
             if ( !this._head_node ) {
-                logger.use( "task" ).warn( "空的任务队列" );
+                logger.task.warn( "空的任务队列" );
                 return chain;
             }
 

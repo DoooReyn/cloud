@@ -77,7 +77,7 @@ export namespace pool {
             // 添加对象池标识
             dict.set( item, "$pool", this.tag );
 
-            // logger.use( "pool" ).debug( `对象池 ${ this.tag } 使用对象, 剩余 ${ this.count }` );
+            // logger.pool.debug( `对象池 ${ this.tag } 使用对象, 剩余 ${ this.count }` );
 
             // 触发委托
             if ( this._on_acquire ) this._on_acquire?.invoke( item );
@@ -96,7 +96,7 @@ export namespace pool {
                 // 延迟一帧回收，避免出现一个对象在同一帧被回收了又被使用的情况
                 scheduler.next_frame( this, () => {
                     this._items.push( item );
-                    // logger.use( "pool" ).debug( `对象池 ${ this.tag } 回收对象, 剩余 ${ this.count }` );
+                    // logger.pool.debug( `对象池 ${ this.tag } 回收对象, 剩余 ${ this.count }` );
                     if ( this._on_recycle ) this._on_recycle.invoke( item );
                 } );
             }
@@ -109,7 +109,7 @@ export namespace pool {
         public abort( item: any ) {
             dict.del( item, "$recycle" );
             dict.del( item, "$pool" );
-            // logger.use( "pool" ).debug( `对象池 ${ this.tag } 弃用对象` );
+            // logger.pool.debug( `对象池 ${ this.tag } 弃用对象` );
             if ( this._on_abort ) this._on_abort.invoke( item );
         }
 
@@ -188,7 +188,7 @@ export namespace pool {
             if ( !this._classes.has( tag ) ) {
                 this._classes.set( tag, new PoolClass( tag, delegate, clazz ) );
             } else {
-                logger.use( "pool" ).warn( `对象池 ${ tag } 已注册！` );
+                logger.pool.warn( `对象池 ${ tag } 已注册！` );
             }
         }
 
@@ -202,7 +202,7 @@ export namespace pool {
             if ( !this._templates.has( tag ) ) {
                 this._templates.set( tag, new PoolTemplate( tag, delegate, template ) );
             } else {
-                logger.use( "pool" ).warn( `对象池 ${ tag } 已注册！` );
+                logger.pool.warn( `对象池 ${ tag } 已注册！` );
             }
         }
 
@@ -230,7 +230,7 @@ export namespace pool {
             } else if ( this._templates.has( tag ) ) {
                 return this._templates.get( tag )!.acquire();
             }
-            logger.use( "pool" ).warn( `对象池 ${ tag } 未注册！` );
+            logger.pool.warn( `对象池 ${ tag } 未注册！` );
             return null;
         }
 
@@ -240,7 +240,7 @@ export namespace pool {
          */
         public recycle( item: any ) {
             if ( !dict.has( item, "$pool" ) ) {
-                return logger.use( "pool" ).warn( "不是对象池的对象", item );
+                return logger.pool.warn( "不是对象池的对象", item );
             }
 
             const tag = dict.get( item, "$pool" );
@@ -249,7 +249,7 @@ export namespace pool {
             } else if ( this._templates.has( tag ) ) {
                 this._templates.get( tag )!.recycle( item );
             } else {
-                logger.use( "pool" ).warn( `对象池 ${ tag } 可能已解散` );
+                logger.pool.warn( `对象池 ${ tag } 可能已解散` );
             }
         }
 

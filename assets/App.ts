@@ -21,7 +21,7 @@ class TestLabel extends Node {
 @ccclass( "App" )
 export class App extends Component {
     start() {
-        console.log( core.information );
+        core.logger.cloud.debug( core.information );
 
         const template = this.node.getChildByName( "Label" );
         const delegate = {
