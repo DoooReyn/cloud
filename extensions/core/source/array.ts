@@ -125,6 +125,27 @@ export namespace array {
         if ( callback ) {
             for ( let i = list.length - 1; i >= 0; i-- ) {
                 callback( list[i] );
+                list.splice( i, 1 );
+            }
+        } else {
+            list.length = 0;
+        }
+    }
+
+    /**
+     * 删除指定数量的元素
+     * @param list 数组
+     * @param count 数量
+     * @param callback 删除回调
+     */
+    export function remove_many( list: any[], count: number, callback?: ( item: any ) => any ) {
+        if ( callback ) {
+            for ( let i = list.length - 1; i >= 0; i-- ) {
+                if ( --count < 0 ) {
+                    break;
+                }
+                callback( list[i] );
+                list.splice( i, 1 );
             }
         } else {
             list.length = 0;

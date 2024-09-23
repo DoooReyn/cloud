@@ -91,10 +91,10 @@ export namespace delegates {
         /**
          * 激活委托
          */
-        public invoke() {
+        public invoke(...args: any[]) {
             for ( let i = 0, l = this._list.length, item: IDelegate; i < l; i++ ) {
                 item = this._list[i];
-                item.handler.apply( item.caller, item.args );
+                item.handler.apply( item.caller, args.concat(item.args) );
                 if ( item.once ) {
                     this._list.splice( i, 1 );
                     --i;

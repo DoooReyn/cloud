@@ -6,6 +6,7 @@
 export { array } from "./array";
 export { be } from "./be";
 export { datetime } from "./datetime";
+export { delegates } from "./delegates";
 export { dict } from "./dict";
 export { digit } from "./digit";
 export { information } from "./information";
