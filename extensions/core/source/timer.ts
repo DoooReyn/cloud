@@ -48,13 +48,13 @@ export namespace timer {
             } else {
                 // 累计时长-延迟时间-循环次数*时间间隔 >= 时间间隔
                 if ( this._total - this.delay - this._ticks * this.interval >= this.interval ) {
-                    ++this._ticks;
                     this.invoke();
                 }
             }
         }
 
         private invoke() {
+            ++this._ticks;
             let args = this.delegate.args ? [ this._ticks, ...this.delegate.args ] : [ this._ticks ];
             this.delegate.handler.apply( this.delegate.caller, args );
         }
