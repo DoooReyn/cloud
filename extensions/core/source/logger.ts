@@ -138,12 +138,13 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.DEBUG ) {
                 if ( use_color ) {
                     console.debug(
-                        "%c D ",
+                        `%c D %c ${this._tag} `,
                         "color:white;background-color:rgb(102,109,117)",
+                        "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
                     );
                 } else {
-                    console.debug( "[D]", ...outputs );
+                    console.debug( "[D]" + this._tag + ">", ...outputs );
                 }
             }
         }
@@ -156,12 +157,13 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.INFO ) {
                 if ( use_color ) {
                     console.info(
-                        "%c I ",
+                        `%c I %c ${this._tag} `,
                         "color:white;background-color:rgb(61,132,247)",
+                        "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
                     );
                 } else {
-                    console.info( "[I]", ...outputs );
+                    console.info( "[I]" + this._tag + ">", ...outputs );
                 }
             }
         }
@@ -174,12 +176,13 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.WARN ) {
                 if ( use_color ) {
                     console.warn(
-                        "%c W ",
+                        `%c W %c ${this._tag} `,
                         "color:white;background-color:rgb(234,166,68)",
+                        "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
                     );
                 } else {
-                    console.warn( "[W]", ...outputs );
+                    console.warn( "[W]" + this._tag + ">", ...outputs );
                 }
             }
         }
@@ -192,12 +195,13 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.ERROR ) {
                 if ( use_color ) {
                     console.error(
-                        "%c E ",
+                        `%c E %c ${this._tag} `,
                         "color:white;background-color:rgb(231,74,97)",
+                        "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
                     );
                 } else {
-                    console.error( "[E]", ...outputs );
+                    console.error( "[E] " + this._tag + ">", ...outputs );
                 }
             }
         }
