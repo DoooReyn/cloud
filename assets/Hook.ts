@@ -8,4 +8,4 @@ app.on_engine_init.on({
     }
 });
 
-app.initialize();
+app.initialize("debug");

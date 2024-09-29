@@ -8,12 +8,14 @@
  */
 
 import { game, Game } from "cc";
+import { DEBUG } from "cc/env";
 import { delegates } from "../delegates";
 import { logger } from "../logger";
 import { singletons } from "../singleton";
 import { platform } from "./platform";
 import { globals } from "../globals";
 import { runner } from "../runner";
+import { settings } from "./settings";
 
 /**
  * App
@@ -28,6 +30,7 @@ class App {
     public on_resume: delegates.Delegates | null;
     public on_show: delegates.Delegates | null;
     public on_hide: delegates.Delegates | null;
+    public preferences: settings.IPreference | undefined;
 
     public constructor() {
         this.on_engine_init = new delegates.Delegates();
@@ -43,7 +46,9 @@ class App {
     /**
      * 初始化
      */
-    public initialize() {
+    public initialize(env: settings.Env) {
+        this.preferences = settings.initialize(env);
+
         const that = this;
         game.once(Game.EVENT_ENGINE_INITED, function () {
             logger.cloud.debug(Game.EVENT_ENGINE_INITED, game.inited);
@@ -63,10 +68,6 @@ class App {
         });
         game.on(Game.EVENT_HIDE, function () {
             that.on_hide!.invoke();
-        });
-        game.on(Game.EVENT_CLOSE, function () {
-            that.on_hide!.invoke();
-            that.on_pause!.invoke();
         });
     }
 
@@ -146,3 +147,5 @@ class App {
 }
 
 export const app = singletons.acquire<App>(App);
+
+DEBUG && globals.register("app", app);

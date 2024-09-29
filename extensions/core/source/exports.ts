@@ -19,5 +19,7 @@ export { singletons } from "./singleton";
 export { timer } from "./timer";
 export { url } from "./url";
 export { pool } from "./pool";
-export { app } from "./app/app";
 export { globals } from "./globals";
+export { app } from "./app/app";
+export { platform } from "./app/platform";
+export { settings } from "./app/settings";
