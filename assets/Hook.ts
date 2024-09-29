@@ -1,11 +1,12 @@
-import { app, globals } from "core/exports";
+import cloud from "core/index";
 
-app.on_engine_init.on({
+cloud.app.on_engine_init.on({
     caller: null, handler() {
-        // 可以在这里去 Hack 引擎代码
-        // 也可以在这里注册全局变量或者引入第三方插件
-        globals.register("app", app);
+        // 可以在这里：
+        // 1. Hack 引擎代码
+        // 2. 注册全局变量（不建议注册太多全局的东西，避免混乱）
+        // 3. 引入第三方插件
     }
 });
 
-app.initialize("debug");
+cloud.app.initialize("debug");
