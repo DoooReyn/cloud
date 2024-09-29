@@ -63,7 +63,7 @@ export namespace platform {
      * ```
      */
     export class Bridge {
-        public static readonly $cname = "platform.bridge";
+        public static readonly $cname = "cloud.platform.bridge";
 
         /**
          * 注册原生平台事件监听
