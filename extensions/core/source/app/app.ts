@@ -17,11 +17,7 @@ import { globals } from "../globals";
 import { runner } from "../runner";
 import { settings } from "./settings";
 
-/**
- * App
- */
-class App {
-    public static readonly $cname: string = "app";
+class AppHook {
     public on_engine_init: delegates.Delegates | null;
     public on_app_init: delegates.Delegates | null;
     public on_start: delegates.Delegates | null;
@@ -30,7 +26,6 @@ class App {
     public on_resume: delegates.Delegates | null;
     public on_show: delegates.Delegates | null;
     public on_hide: delegates.Delegates | null;
-    public preferences: settings.IPreference | undefined;
 
     public constructor() {
         this.on_engine_init = new delegates.Delegates();
@@ -42,80 +37,91 @@ class App {
         this.on_show = new delegates.Delegates();
         this.on_hide = new delegates.Delegates();
     }
+}
+
+/**
+ * App
+ */
+class App {
+    public static readonly $cname: string = "app";
+    public readonly hook: AppHook = new AppHook();
+    public preferences: settings.IPreference | undefined;
 
     /**
      * 初始化
      */
-    public initialize(env: settings.Env) {
-        this.preferences = settings.initialize(env);
+    public initialize( env: settings.Env ) {
+        this.preferences = settings.initialize( env );
 
         const that = this;
-        game.once(Game.EVENT_ENGINE_INITED, function () {
-            logger.cloud.debug(Game.EVENT_ENGINE_INITED, game.inited);
-            that.on_engine_init!.invoke();
-            that.on_engine_init!.off_all();
-            that.on_engine_init = null;
-        });
-        game.once(Game.EVENT_GAME_INITED, function () {
-            logger.cloud.debug(Game.EVENT_GAME_INITED, game.inited);
-            that.on_app_init!.invoke();
-            that.on_app_init!.off_all();
-            that.on_app_init = null;
+        game.once( Game.EVENT_ENGINE_INITED, function () {
+            logger.cloud.debug( Game.EVENT_ENGINE_INITED, game.inited );
+            that.hook.on_engine_init!.invoke();
+            that.hook.on_engine_init!.off_all();
+            that.hook.on_engine_init = null;
+        } );
+        game.once( Game.EVENT_GAME_INITED, function () {
+            logger.cloud.debug( Game.EVENT_GAME_INITED, game.inited );
+            that.hook.on_app_init!.invoke();
+            that.hook.on_app_init!.off_all();
+            that.hook.on_app_init = null;
             that.start();
-        });
-        game.on(Game.EVENT_SHOW, function () {
-            that.on_show!.invoke();
-        });
-        game.on(Game.EVENT_HIDE, function () {
-            that.on_hide!.invoke();
-        });
+        } );
+        game.on( Game.EVENT_SHOW, function () {
+            that.hook.on_show!.invoke();
+        } );
+        game.on( Game.EVENT_HIDE, function () {
+            that.hook.on_hide!.invoke();
+        } );
     }
 
     /**
      * 重启
      */
     public restart() {
-        if (platform.native) {
-            if (platform.ios || platform.android) {
+        if ( platform.native ) {
+            if ( platform.ios || platform.android ) {
                 // iOS 和 Android 给原生层发送事件（需要开发者在原生层注册对应接口）
-                platform.bridge.dispatch("restart");
+                platform.bridge.dispatch( "restart" );
                 return;
             }
-        } else if (platform.minigame) {
-            if (platform.bytedance) {
+        } else if ( platform.minigame ) {
+            if ( platform.bytedance ) {
                 // 抖音提供了重启接口，可以直接调用
-                runner.execute_in_safe_mode(null, null, () => {
-                    globals.get<any>("tt").restartMiniProgramSync();
-                });
+                runner.execute_in_safe_mode( null, null, () => {
+                    globals.get<any>( "tt" ).restartMiniProgramSync();
+                } );
                 return;
-            } else if (platform.wechat) {
+            } else if ( platform.wechat ) {
                 // 微信提供了重启接口，可以直接调用
-                runner.execute_in_safe_mode(null, null, () => {
-                    globals.get<any>("wx").restartMiniProgram({});
-                });
+                runner.execute_in_safe_mode( null, null, () => {
+                    globals.get<any>( "wx" ).restartMiniProgram( {} );
+                } );
                 return;
-            } else if (platform.alipay) {
+            } else if ( platform.alipay ) {
                 // 支付宝提供了重启接口，可以直接调用
-                runner.execute_in_safe_mode(null, null, () => {
-                    globals.get<any>("my").restartMiniProgram({});
-                });
+                runner.execute_in_safe_mode( null, null, () => {
+                    globals.get<any>( "my" ).restartMiniProgram( {} );
+                } );
             } else {
                 // TODO 其他小游戏
             }
-        } else if (platform.browser) {
+        } else if ( platform.browser ) {
             // 网页版可以直接刷新页面
             location.reload();
             return;
         }
 
-        logger.cloud.warn(`重启失败：不支持的平台 ${platform.os}-${platform.name}`);
+        logger.cloud.warn( `重启失败：不支持的平台 ${ platform.os }-${ platform.name }` );
     }
 
     /**
      * 退出
      */
     public stop() {
-        if (game.inited) this.on_stop!.invoke();
+        if ( game.inited ) {
+            this.hook.on_stop!.invoke();
+        }
         game.end();
     }
 
@@ -123,14 +129,18 @@ class App {
      * 暂停
      */
     public pause() {
-        if (game.inited) this.on_pause!.invoke();
+        if ( game.inited ) {
+            this.hook.on_pause!.invoke();
+        }
     }
 
     /**
      * 恢复
      */
     public resume() {
-        if (game.inited) this.on_resume!.invoke();
+        if ( game.inited ) {
+            this.hook.on_resume!.invoke();
+        }
     }
 
     /**
@@ -138,14 +148,14 @@ class App {
      * @protected
      */
     protected start() {
-        if (game.inited) {
-            this.on_start!.invoke();
-            this.on_start!.off_all();
-            this.on_start = null;
+        if ( game.inited ) {
+            this.hook.on_start!.invoke();
+            this.hook.on_start!.off_all();
+            this.hook.on_start = null;
         }
     }
 }
 
-export const app = singletons.acquire<App>(App);
+export const app = singletons.acquire<App>( App );
 
-DEBUG && globals.register("app", app);
+DEBUG && globals.register( "app", app );
