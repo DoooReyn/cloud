@@ -26,7 +26,7 @@ export namespace runner {
         callback: Function,
         ...args: any[]
     ) {
-        if ( be.truely( condition ) ) callback( ...args );
+        if (be.truely(condition)) callback(...args);
     }
 
     /**
@@ -40,7 +40,7 @@ export namespace runner {
         callback: Function,
         ...args: any[]
     ) {
-        if ( be.falsy( condition ) ) callback( ...args );
+        if (be.falsy(condition)) callback(...args);
     }
 
     /**
@@ -48,8 +48,8 @@ export namespace runner {
      * @param callback 运行器
      * @param args 参数列表
      */
-    export function execute_in_editor( callback: Function, ...args: any[] ) {
-        execute_in( EDITOR, callback, ...args );
+    export function execute_in_editor(callback: Function, ...args: any[]) {
+        execute_in(EDITOR, callback, ...args);
     }
 
     /**
@@ -57,8 +57,8 @@ export namespace runner {
      * @param callback 运行器
      * @param args 参数列表
      */
-    export function execute_not_in_editor( callback: Function, ...args: any[] ) {
-        execute_not_in( EDITOR, callback, ...args );
+    export function execute_not_in_editor(callback: Function, ...args: any[]) {
+        execute_not_in(EDITOR, callback, ...args);
     }
 
     /**
@@ -66,7 +66,23 @@ export namespace runner {
      * @param callback 运行器
      * @param args 参数列表
      */
-    export function execute_in_preview( callback: Function, ...args: any[] ) {
-        execute_in( PREVIEW, callback, ...args );
+    export function execute_in_preview(callback: Function, ...args: any[]) {
+        execute_in(PREVIEW, callback, ...args);
+    }
+
+    /**
+     * 在安全模式下运行
+     * @param oncomplete 完成回调
+     * @param caller 调用者
+     * @param callback 运行器
+     * @param args 参数列表
+     */
+    export function execute_in_safe_mode(oncomplete: Function | null, caller: any, callback: Function, ...args: any[]) {
+        try {
+            const ret = callback.apply(caller, args);
+            oncomplete && oncomplete(null, ret);
+        } catch (e) {
+            oncomplete && oncomplete(e, null);
+        }
     }
 }
