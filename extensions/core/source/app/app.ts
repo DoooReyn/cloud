@@ -93,6 +93,11 @@ class App {
                     globals.get<any>("wx").restartMiniProgram({});
                 });
                 return;
+            } else if (platform.alipay) {
+                // 支付宝提供了重启接口，可以直接调用
+                runner.execute_in_safe_mode(null, null, () => {
+                    globals.get<any>("my").restartMiniProgram({});
+                });
             } else {
                 // TODO 其他小游戏
             }
