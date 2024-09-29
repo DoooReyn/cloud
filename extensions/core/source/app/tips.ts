@@ -1,4 +1,5 @@
 export namespace tips {
+    // -------------------- app --------------------
     export const information = "框架";
     export const preference = "预设";
     export const engine_initialized = "引擎初始化完成";
@@ -12,4 +13,10 @@ export namespace tips {
     export const app_paused = "应用暂停";
     export const app_resumed = "应用恢复";
     export const app_launched = "应用启动";
+
+    // -------------------- pool --------------------
+    export const pool_registered = "对象池已注册";
+    export const pool_unregistered = "对象池未注册";
+    export const pool_not_myself = "不是对象池的对象";
+    export const pool_maybe_dismiss = "对象池可能已解散";
 }

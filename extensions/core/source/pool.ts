@@ -8,6 +8,7 @@ import { scheduler } from "./scheduler";
 import { array } from "./array";
 import { logger } from "./logger";
 import { delegates } from "./delegates";
+import { tips } from "./app/tips";
 
 export namespace pool {
     /** 生产方法：类 */
@@ -188,7 +189,7 @@ export namespace pool {
             if ( !this._classes.has( tag ) ) {
                 this._classes.set( tag, new PoolClass( tag, delegate, clazz ) );
             } else {
-                logger.pool.warn( `对象池 ${ tag } 已注册！` );
+                logger.pool.warn( `${ tips.pool_registered } ${ tag }` );
             }
         }
 
@@ -202,7 +203,7 @@ export namespace pool {
             if ( !this._templates.has( tag ) ) {
                 this._templates.set( tag, new PoolTemplate( tag, delegate, template ) );
             } else {
-                logger.pool.warn( `对象池 ${ tag } 已注册！` );
+                logger.pool.warn( `${ tips.pool_registered } ${ tag }` );
             }
         }
 
@@ -230,7 +231,7 @@ export namespace pool {
             } else if ( this._templates.has( tag ) ) {
                 return this._templates.get( tag )!.acquire();
             }
-            logger.pool.warn( `对象池 ${ tag } 未注册！` );
+            logger.pool.warn( `${ tips.pool_unregistered } ${ tag }` );
             return null;
         }
 
@@ -240,7 +241,7 @@ export namespace pool {
          */
         public recycle( item: any ) {
             if ( !dict.has( item, "$pool" ) ) {
-                return logger.pool.warn( "不是对象池的对象", item );
+                return logger.pool.warn( tips.pool_not_myself, item );
             }
 
             const tag = dict.get( item, "$pool" );
@@ -249,7 +250,7 @@ export namespace pool {
             } else if ( this._templates.has( tag ) ) {
                 this._templates.get( tag )!.recycle( item );
             } else {
-                logger.pool.warn( `对象池 ${ tag } 可能已解散` );
+                logger.pool.warn( `${ tips.pool_maybe_dismiss } ${ tag }` );
             }
         }
 

@@ -23,3 +23,4 @@ export { globals } from "./globals";
 export { app } from "./app/app";
 export { platform } from "./app/platform";
 export { settings } from "./app/settings";
+export { tips } from "./app/tips";
