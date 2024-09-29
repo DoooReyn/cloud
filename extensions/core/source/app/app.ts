@@ -175,5 +175,3 @@ class App {
 }
 
 export const app = singletons.acquire<App>( App );
-
-DEBUG && globals.register( "app", app );
