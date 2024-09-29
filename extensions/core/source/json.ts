@@ -15,7 +15,7 @@ export namespace json {
         try {
             return JSON.parse( text, receiver );
         } catch ( error ) {
-            logger.cloud.error( error );
+            logger.core.error( error );
             return null;
         }
     }
@@ -34,7 +34,7 @@ export namespace json {
         try {
             return JSON.stringify( content, replacer, space );
         } catch ( error ) {
-            logger.cloud.error( error );
+            logger.core.error( error );
             return null;
         }
     }

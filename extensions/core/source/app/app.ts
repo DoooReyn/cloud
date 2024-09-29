@@ -7,7 +7,7 @@
  * 5. app.stop
  */
 
-import { game, Game } from "cc";
+import { director, Director, Game, game, Node, Scene } from "cc";
 import { DEBUG } from "cc/env";
 import { delegates } from "../delegates";
 import { logger } from "../logger";
@@ -16,6 +16,8 @@ import { platform } from "./platform";
 import { globals } from "../globals";
 import { runner } from "../runner";
 import { settings } from "./settings";
+import { information } from "../information";
+import { tips } from "./tips";
 
 class AppHook {
     public on_engine_init: delegates.Delegates | null;
@@ -46,32 +48,43 @@ class App {
     public static readonly $cname: string = "app";
     public readonly hook: AppHook = new AppHook();
     public preferences: settings.IPreference | undefined;
+    public scene: Scene | undefined;
+    public root: Node | undefined;
 
     /**
      * 初始化
      */
     public initialize( env: settings.Env ) {
         this.preferences = settings.initialize( env );
+        logger.core.table( tips.information, information );
+        logger.core.table( tips.preference, this.preferences );
 
         const that = this;
         game.once( Game.EVENT_ENGINE_INITED, function () {
-            logger.cloud.debug( Game.EVENT_ENGINE_INITED, game.inited );
             that.hook.on_engine_init!.invoke();
             that.hook.on_engine_init!.off_all();
             that.hook.on_engine_init = null;
+            logger.core.debug( tips.engine_initialized );
         } );
         game.once( Game.EVENT_GAME_INITED, function () {
-            logger.cloud.debug( Game.EVENT_GAME_INITED, game.inited );
             that.hook.on_app_init!.invoke();
             that.hook.on_app_init!.off_all();
             that.hook.on_app_init = null;
-            that.start();
+            logger.core.debug( tips.app_initialized );
         } );
         game.on( Game.EVENT_SHOW, function () {
+            logger.core.debug( tips.app_bring_to_foreground );
             that.hook.on_show!.invoke();
         } );
         game.on( Game.EVENT_HIDE, function () {
+            logger.core.debug( tips.app_come_to_background );
             that.hook.on_hide!.invoke();
+        } );
+        director.once( Director.EVENT_AFTER_SCENE_LAUNCH, function () {
+            logger.core.debug( tips.app_scene_launched );
+            that.scene = director.getScene()!;
+            that.root = that.scene.children.find( v => v.name == "Canvas" );
+            that.start();
         } );
     }
 
@@ -79,6 +92,7 @@ class App {
      * 重启
      */
     public restart() {
+        logger.core.debug( tips.app_attempt_to_restart );
         if ( platform.native ) {
             if ( platform.ios || platform.android ) {
                 // iOS 和 Android 给原生层发送事件（需要开发者在原生层注册对应接口）
@@ -112,7 +126,7 @@ class App {
             return;
         }
 
-        logger.cloud.warn( `重启失败：不支持的平台 ${ platform.os }-${ platform.name }` );
+        logger.core.warn( `${ tips.app_restart_failed } ${ platform.os }-${ platform.name }` );
     }
 
     /**
@@ -122,6 +136,7 @@ class App {
         if ( game.inited ) {
             this.hook.on_stop!.invoke();
         }
+        logger.core.debug( tips.app_quited );
         game.end();
     }
 
@@ -129,8 +144,9 @@ class App {
      * 暂停
      */
     public pause() {
-        if ( game.inited ) {
+        if ( game.inited && !game.isPaused() ) {
             this.hook.on_pause!.invoke();
+            logger.core.debug( tips.app_paused );
         }
     }
 
@@ -138,8 +154,9 @@ class App {
      * 恢复
      */
     public resume() {
-        if ( game.inited ) {
+        if ( game.inited && game.isPaused() ) {
             this.hook.on_resume!.invoke();
+            logger.core.debug( tips.app_resumed );
         }
     }
 
@@ -152,6 +169,7 @@ class App {
             this.hook.on_start!.invoke();
             this.hook.on_start!.off_all();
             this.hook.on_start = null;
+            logger.core.debug( tips.app_launched );
         }
     }
 }

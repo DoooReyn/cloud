@@ -20,7 +20,7 @@ class TestLabel extends Node {
 @ccclass("App")
 export class App extends Component {
     start() {
-        cloud.logger.cloud.debug(cloud.information);
+        cloud.logger.core.debug( cloud.information);
 
         const template = this.node.getChildByName("Label");
         const delegate = {

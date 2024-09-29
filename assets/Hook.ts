@@ -1,6 +1,6 @@
 import cloud from "core/index";
 
-cloud.app.on_engine_init.on({
+cloud.app.hook.on_engine_init.on({
     caller: null, handler() {
         // 可以在这里：
         // 1. Hack 引擎代码

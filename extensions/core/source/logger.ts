@@ -127,7 +127,14 @@ export namespace logger {
          * @param outputs
          */
         public raw( ...outputs: any[] ) {
-            console.debug( ...outputs );
+            console.log( ...outputs );
+        }
+
+        public table( tag: string, obj: any ) {
+            this.debug( tag );
+            if ( this._level <= LOG_LEVEL.DEBUG ) {
+                console.table( obj );
+            }
         }
 
         /**
@@ -138,7 +145,7 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.DEBUG ) {
                 if ( use_color ) {
                     console.debug(
-                        `%c D %c ${this._tag} `,
+                        `%c D %c ${ this._tag } `,
                         "color:white;background-color:rgb(102,109,117)",
                         "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
@@ -157,7 +164,7 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.INFO ) {
                 if ( use_color ) {
                     console.info(
-                        `%c I %c ${this._tag} `,
+                        `%c I %c ${ this._tag } `,
                         "color:white;background-color:rgb(61,132,247)",
                         "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
@@ -176,7 +183,7 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.WARN ) {
                 if ( use_color ) {
                     console.warn(
-                        `%c W %c ${this._tag} `,
+                        `%c W %c ${ this._tag } `,
                         "color:white;background-color:rgb(234,166,68)",
                         "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
@@ -195,7 +202,7 @@ export namespace logger {
             if ( this._level <= LOG_LEVEL.ERROR ) {
                 if ( use_color ) {
                     console.error(
-                        `%c E %c ${this._tag} `,
+                        `%c E %c ${ this._tag } `,
                         "color:white;background-color:rgb(231,74,97)",
                         "color:white;background-color:rgb(0,153,221)",
                         ...outputs,
@@ -256,7 +263,7 @@ export namespace logger {
     }
 
     /** 默认日志记录器 */
-    export const cloud = create( "cloud" );
+    export const core = create( "core" );
     /** 对象池日志记录器 */
     export const pool = create( "pool" );
     /** 任务日志记录器 */
