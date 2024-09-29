@@ -1,0 +1,1 @@
+export * as ENVIRONMENT from "cc/env";

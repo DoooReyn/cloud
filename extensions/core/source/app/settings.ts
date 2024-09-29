@@ -36,6 +36,10 @@ export namespace settings {
         auto_login: boolean;
         /** 游戏 LOGO */
         logo: string;
+        /** 显示统计信息 */
+        show_stat: boolean;
+        /** 设定帧率 */
+        fps: number;
     }
 
     /**
@@ -58,7 +62,9 @@ export namespace settings {
             admin: true,
             gm: true,
             timeout: 7200,
-            auto_login: false
+            auto_login: false,
+            show_stat: true,
+            fps: 120
         },
         release: {
             env: "release",
@@ -75,7 +81,9 @@ export namespace settings {
             admin: false,
             gm: false,
             timeout: 3000,
-            auto_login: false
+            auto_login: false,
+            show_stat: true,
+            fps: 120
         }
     };
 
@@ -86,7 +94,7 @@ export namespace settings {
      * 初始化预设值配置
      * @param env 环境
      */
-    export function initialize(env: Env) {
+    export function initialize( env: Env ) {
         return preferences_map[env];
     }
 }

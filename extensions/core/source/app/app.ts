@@ -18,6 +18,7 @@ import { settings } from "./settings";
 import { information } from "../information";
 import { tips } from "./tips";
 import { datetime } from "../datetime";
+import { stat } from "./stat";
 
 class AppHook {
     public on_engine_init: delegates.Delegates | null;
@@ -88,6 +89,12 @@ class App {
             logger.core.debug( tips.app_scene_launched );
             that.scene = director.getScene()!;
             that.root = that.scene.children.find( v => v.name == "Canvas" );
+
+            game.frameRate = that.preferences!.fps - Number.EPSILON;
+
+            stat.hack();
+            that.preferences!.show_stat ? stat.show() : stat.hide();
+
             that.start();
         } );
     }
