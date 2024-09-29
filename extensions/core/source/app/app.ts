@@ -8,7 +8,6 @@
  */
 
 import { director, Director, Game, game, Node, Scene } from "cc";
-import { DEBUG } from "cc/env";
 import { delegates } from "../delegates";
 import { logger } from "../logger";
 import { singletons } from "../singleton";
