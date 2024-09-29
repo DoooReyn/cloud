@@ -17,6 +17,7 @@ import { runner } from "../runner";
 import { settings } from "./settings";
 import { information } from "../information";
 import { tips } from "./tips";
+import { datetime } from "../datetime";
 
 class AppHook {
     public on_engine_init: delegates.Delegates | null;
@@ -49,6 +50,7 @@ class App {
     public preferences: settings.IPreference | undefined;
     public scene: Scene | undefined;
     public root: Node | undefined;
+    private _time_span: datetime.Record = new datetime.Record( App.$cname );
 
     /**
      * 初始化
@@ -73,10 +75,13 @@ class App {
         } );
         game.on( Game.EVENT_SHOW, function () {
             logger.core.debug( tips.app_bring_to_foreground );
+            that._time_span.end();
+            logger.core.debug( `${ tips.app_stay_at_background } ${ that._time_span.elapsed / 1000 }s` );
             that.hook.on_show!.invoke();
         } );
         game.on( Game.EVENT_HIDE, function () {
             logger.core.debug( tips.app_come_to_background );
+            that._time_span.start();
             that.hook.on_hide!.invoke();
         } );
         director.once( Director.EVENT_AFTER_SCENE_LAUNCH, function () {

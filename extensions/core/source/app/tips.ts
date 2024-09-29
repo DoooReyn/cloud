@@ -13,10 +13,12 @@ export namespace tips {
     export const app_paused = "应用暂停";
     export const app_resumed = "应用恢复";
     export const app_launched = "应用启动";
+    export const app_stay_at_background = "应用在后台待了";
 
     // -------------------- pool --------------------
     export const pool_registered = "对象池已注册";
     export const pool_unregistered = "对象池未注册";
     export const pool_not_myself = "不是对象池的对象";
     export const pool_maybe_dismiss = "对象池可能已解散";
+
 }

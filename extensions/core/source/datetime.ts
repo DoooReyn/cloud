@@ -3,6 +3,8 @@
  * @Description: 时间与日期
  */
 
+import { sys } from "cc";
+
 export namespace datetime {
     /**
      * 当前时间戳
@@ -161,4 +163,28 @@ export namespace datetime {
     export const TIME_HOUR = 60 * TIME_MINUTE;
     /** 1 天 */
     export const TIME_DAY = 24 * TIME_HOUR;
+
+    export class Record {
+        private _start: number = 0;
+        private _ended: number = 0;
+
+        public get now() {
+            return performance ? performance.now() : sys.now();
+        }
+
+        public get elapsed() {
+            return Math.ceil( this._ended - this._start );
+        }
+
+        public constructor( private _tag: string ) {}
+
+        public start() {
+            this._start = this.now;
+        }
+
+        public end() {
+            if ( isNaN( this._start ) ) return;
+            this._ended = this.now;
+        }
+    }
 }
