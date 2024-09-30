@@ -4,8 +4,7 @@ import { HierarchyLayer, ILayerPreference } from "./layer";
 export class Hierarchy {
     private static $temp: HierarchyLayer[] = [];
     public readonly bottom: HierarchyLayer = null!;
-    public readonly map: HierarchyLayer = null!;
-    public readonly ui: HierarchyLayer = null!;
+    public readonly window: HierarchyLayer = null!;
     public readonly dialog: HierarchyLayer = null!;
     public readonly toast: HierarchyLayer = null!;
     public readonly guide: HierarchyLayer = null!;

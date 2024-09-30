@@ -191,17 +191,30 @@ class App {
         }
     }
 
-    /** 构建层级框架 */
+    /**
+     * 构建层级框架
+     * - bottom 底层
+     * - window 窗口层
+     * - dialog 弹窗层
+     * - toast 提示层
+     * - waiting 等待层
+     * - guide 引导层
+     * - loading 加载层
+     * - transition 转场层
+     * - warning 警报层
+     * - top 顶层
+     */
     protected build_hierarchy() {
-        Hierarchy.AddLayer( { name: "bottom", touch_cross: false, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "map", touch_cross: false, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "ui", touch_cross: true, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "dialog", touch_cross: false, ui_opaque: true } );
-        Hierarchy.AddLayer( { name: "toast", touch_cross: true, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "guide", touch_cross: false, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "loading", touch_cross: false, ui_opaque: false } );
-        Hierarchy.AddLayer( { name: "warn", touch_cross: false, ui_opaque: true } );
-        Hierarchy.AddLayer( { name: "top", touch_cross: false, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "bottom", touch_cross: false, ui_opaque: false, visible: true } );
+        Hierarchy.AddLayer( { name: "window", touch_cross: true, ui_opaque: false, visible: true } );
+        Hierarchy.AddLayer( { name: "dialog", touch_cross: false, ui_opaque: true, visible: false } );
+        Hierarchy.AddLayer( { name: "toast", touch_cross: true, ui_opaque: false, visible: false } );
+        Hierarchy.AddLayer( { name: "waiting", touch_cross: false, ui_opaque: false, visible: false } );
+        Hierarchy.AddLayer( { name: "guide", touch_cross: false, ui_opaque: true, visible: false } );
+        Hierarchy.AddLayer( { name: "loading", touch_cross: false, ui_opaque: true, visible: false } );
+        Hierarchy.AddLayer( { name: "transition", touch_cross: false, ui_opaque: false, visible: false } );
+        Hierarchy.AddLayer( { name: "warning", touch_cross: false, ui_opaque: true, visible: false } );
+        Hierarchy.AddLayer( { name: "top", touch_cross: false, ui_opaque: false, visible: true } );
         this.hierarchy = Hierarchy.Build( this.root! );
     }
 }

@@ -1,16 +1,21 @@
-import { Color, EventTouch, Graphics, Node, screen, UITransform, Widget } from "cc";
+import { Color, Constructor, EventTouch, Graphics, Node, screen, UITransform, Widget } from "cc";
 import { app } from "./app";
 import { constants } from "./constants";
 import { logger } from "../logger";
 import { delegates } from "../delegates";
 
+/**
+ * 层级初始预设值
+ */
 export interface ILayerPreference {
     /** 层级名称 */
     name: string;
     /** 是否允许触摸穿透 */
     touch_cross: boolean;
-    /** 显示半透层 */
+    /** 是否显示半透遮罩 */
     ui_opaque: boolean;
+    /** 是否可视 */
+    visible: boolean;
 }
 
 class TouchHook {
@@ -20,17 +25,61 @@ class TouchHook {
     public readonly on_leave: delegates.Delegates = new delegates.Delegates();
 }
 
+export class LayerCapability {
+    public get visible() {
+        return this.layer.active;
+    }
+
+    constructor( public readonly layer: HierarchyLayer ) {
+        this.layer.on( Node.EventType.CHILD_ADDED, this.check_visibility, this );
+        this.layer.on( Node.EventType.CHILD_REMOVED, this.check_visibility, this );
+    }
+
+    /**
+     * 检查可视性
+     * @private
+     */
+    private check_visibility() {
+        // 如果预设值是可视的，那么它就是一直可见，不需要处理
+        if ( this.layer.preference.visible ) return;
+        // 否则，根据子节点的数量及可视情况决定是否显示
+        const children = this.layer.children;
+        const count = children.length;
+        if ( count == 0 ) {
+            this.layer.active = false;
+            return;
+        }
+        let child: Node;
+        let v2: boolean = false;
+        for ( let i = 0; i < count; i++ ) {
+            child = children[i];
+            if ( child.active ) {
+                v2 = true;
+                break;
+            }
+        }
+        this.layer.active = v2;
+    }
+}
+
 /**
  * 层级基类
  */
 export class HierarchyLayer extends Node {
-    public touch_hook: TouchHook = new TouchHook();
+    public touch_hook: TouchHook;
     protected ui_trans: UITransform;
     protected ui_adapter: Widget;
     protected ui_opaque: Graphics;
+    private _capability: LayerCapability = null!;
+
+    public get capability() {
+        return this._capability!;
+    }
 
     constructor( public readonly preference: ILayerPreference ) {
         super( constants.hierarchy_layer + preference.name );
+
+        this.touch_hook = new TouchHook();
 
         this.ui_trans = this.addComponent( UITransform );
         this.ui_trans.setAnchorPoint( constants.anchor_center );
@@ -44,11 +93,16 @@ export class HierarchyLayer extends Node {
         this.ui_adapter.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
     }
 
+    public register_capability( cap: Constructor<LayerCapability> ) {
+        this._capability = new cap( this );
+    }
+
     public initialize() {
-        logger.ui.debug( this.ui_trans.contentSize.toString() );
         this.adapt_screen();
         this.register_touch_events();
-        this.show_modal(this.preference.ui_opaque);
+        this.show_modal( this.preference.ui_opaque );
+        this.active = this.preference.visible;
+        logger.ui.debug( this.name, this.preference );
     }
 
     public show_modal( enabled: boolean ) {
