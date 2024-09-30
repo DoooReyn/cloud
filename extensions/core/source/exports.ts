@@ -24,3 +24,4 @@ export { app } from "./app/app";
 export { platform } from "./app/platform";
 export { settings } from "./app/settings";
 export { tips } from "./app/tips";
+export { constants } from "./app/constants";

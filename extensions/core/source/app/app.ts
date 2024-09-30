@@ -19,6 +19,7 @@ import { information } from "../information";
 import { tips } from "./tips";
 import { datetime } from "../datetime";
 import { stat } from "./stat";
+import { Hierarchy } from "./hierarchy";
 
 class AppHook {
     public on_engine_init: delegates.Delegates | null;
@@ -51,6 +52,7 @@ class App {
     public preferences: settings.IPreference | undefined;
     public scene: Scene | undefined;
     public root: Node | undefined;
+    public hierarchy: Hierarchy | undefined;
     private _time_span: datetime.Record = new datetime.Record( App.$cname );
 
     /**
@@ -87,14 +89,19 @@ class App {
         } );
         director.once( Director.EVENT_AFTER_SCENE_LAUNCH, function () {
             logger.core.debug( tips.app_scene_launched );
+            // 获取当前场景
             that.scene = director.getScene()!;
+            // 获取场景根节点
             that.root = that.scene.children.find( v => v.name == "Canvas" );
-
+            // 设置帧率
             game.frameRate = that.preferences!.fps - Number.EPSILON;
-
+            // Hack 统计信息，加描边
             stat.hack();
+            // 显示统计信息
             that.preferences!.show_stat ? stat.show() : stat.hide();
-
+            // 构建层级框架
+            that.build_hierarchy();
+            // 启动应用
             that.start();
         } );
     }
@@ -182,6 +189,20 @@ class App {
             this.hook.on_start = null;
             logger.core.debug( tips.app_launched );
         }
+    }
+
+    /** 构建层级框架 */
+    protected build_hierarchy() {
+        Hierarchy.AddLayer( { name: "bottom", touch_cross: false, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "map", touch_cross: false, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "ui", touch_cross: true, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "dialog", touch_cross: false, ui_opaque: true } );
+        Hierarchy.AddLayer( { name: "toast", touch_cross: true, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "guide", touch_cross: false, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "loading", touch_cross: false, ui_opaque: false } );
+        Hierarchy.AddLayer( { name: "warn", touch_cross: false, ui_opaque: true } );
+        Hierarchy.AddLayer( { name: "top", touch_cross: false, ui_opaque: false } );
+        this.hierarchy = Hierarchy.Build( this.root! );
     }
 }
 

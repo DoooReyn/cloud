@@ -268,4 +268,6 @@ export namespace logger {
     export const pool = create( "pool" );
     /** 任务日志记录器 */
     export const task = create( "task" );
+    /** UI 记录器 */
+    export const ui = create( "ui" );
 }
