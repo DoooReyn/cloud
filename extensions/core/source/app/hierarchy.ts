@@ -1,25 +1,25 @@
 import { Node } from "cc";
-import { HierarchyLayer, ILayerPreference } from "./layer";
+import { UILayer, ILayerPreference } from "./layer";
 
 export class Hierarchy {
-    private static $temp: HierarchyLayer[] = [];
-    public readonly bottom: HierarchyLayer = null!;
-    public readonly window: HierarchyLayer = null!;
-    public readonly dialog: HierarchyLayer = null!;
-    public readonly toast: HierarchyLayer = null!;
-    public readonly guide: HierarchyLayer = null!;
-    public readonly loading: HierarchyLayer = null!;
-    public readonly warn: HierarchyLayer = null!;
-    public readonly top: HierarchyLayer = null!;
+    private static $temp: UILayer[] = [];
+    public readonly bottom: UILayer = null!;
+    public readonly window: UILayer = null!;
+    public readonly dialog: UILayer = null!;
+    public readonly toast: UILayer = null!;
+    public readonly guide: UILayer = null!;
+    public readonly loading: UILayer = null!;
+    public readonly warn: UILayer = null!;
+    public readonly top: UILayer = null!;
 
     public static AddLayer( info: ILayerPreference ) {
-        Hierarchy.$temp.push( new HierarchyLayer( info ) );
+        Hierarchy.$temp.push( new UILayer( info ) );
     }
 
     public static Build( root: Node ) {
         const hierarchy = new Hierarchy( root );
         const layers = this.$temp;
-        var layer: HierarchyLayer;
+        var layer: UILayer;
         for ( let i = 0, l = layers.length; i < l; i++ ) {
             layer = layers[i];
             root.addChild( layer );
@@ -30,7 +30,7 @@ export class Hierarchy {
         return hierarchy;
     }
 
-    private _layers: Record<string, HierarchyLayer> = {};
+    private _layers: Record<string, UILayer> = {};
 
     constructor( public readonly root: Node ) {}
 
