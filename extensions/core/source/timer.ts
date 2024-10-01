@@ -31,7 +31,7 @@ export namespace timer {
             public readonly delay: number,
             public readonly interval: number,
             public readonly ticks: number,
-            public readonly delegate: delegates.IDelegate
+            public readonly delegate: delegates.Delegate
         ) {
             this.id = next_tid();
             this._total = 0;
@@ -76,21 +76,21 @@ export namespace timer {
             this._scheduler.scheduleUpdate( this, 0, false );
         }
 
-        public next( delay: number, delegate: delegates.IDelegate ) {
+        public next( delay: number, delegate: delegates.Delegate ) {
             const info = new TimeInfo( delay, 0, 1, delegate );
             this._list.push( info );
             return info.id;
         }
 
-        public next_tick( delegate: delegates.IDelegate ) {
+        public next_tick( delegate: delegates.Delegate ) {
             return this.next( datetime.TIME_ZERO, delegate );
         }
 
-        public next_frame( delegate: delegates.IDelegate ) {
+        public next_frame( delegate: delegates.Delegate ) {
             return this.next( datetime.TIME_FRAME, delegate );
         }
 
-        public next_second( delegate: delegates.IDelegate ) {
+        public next_second( delegate: delegates.Delegate ) {
             return this.next( datetime.TIME_SECOND, delegate );
         }
 
@@ -101,22 +101,22 @@ export namespace timer {
             }
         }
 
-        public repeat( delay: number, interval: number, ticks: number, delegate: delegates.IDelegate ) {
+        public repeat( delay: number, interval: number, ticks: number, delegate: delegates.Delegate ) {
             if ( ticks < 0 ) ticks = macro.REPEAT_FOREVER;
             const info = new TimeInfo( delay, interval, ticks, delegate );
             this._list.push( info );
             return info.id;
         }
 
-        public repeat_forever( delay: number, interval: number, delegate: delegates.IDelegate ) {
+        public repeat_forever( delay: number, interval: number, delegate: delegates.Delegate ) {
             this.repeat( delay, interval, macro.REPEAT_FOREVER, delegate );
         }
 
-        public repeat_every_frame( delay: number, delegates: delegates.IDelegate ) {
+        public repeat_every_frame( delay: number, delegates: delegates.Delegate ) {
             this.repeat_forever( delay, datetime.TIME_FRAME, delegates );
         }
 
-        public repeat_every_second( delay: number, delegates: delegates.IDelegate ) {
+        public repeat_every_second( delay: number, delegates: delegates.Delegate ) {
             this.repeat_forever( delay, datetime.TIME_SECOND, delegates );
         }
 
@@ -138,11 +138,11 @@ export namespace timer {
         }
 
         public pause() {
-            this._scheduler.pauseTarget(this);
+            this._scheduler.pauseTarget( this );
         }
 
         public resume() {
-            this._scheduler.resumeTarget(this);
+            this._scheduler.resumeTarget( this );
         }
     }
 

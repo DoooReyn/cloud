@@ -4,14 +4,39 @@
  */
 
 import { array } from "./array";
+import { pool } from "./pool";
 
 export namespace delegates {
-    /** 委托结构体 */
-    export interface IDelegate {
-        caller: any;
-        handler: Function;
-        args?: any[];
-        once?: boolean;
+    export class Delegate {
+        public caller: any = null!;
+        public handler: Function = null!;
+        public args: any[] = null!;
+        public once: boolean = false;
+
+        public set( caller: any, handler: Function, args: any[], once: boolean = false ) {
+            this.caller = caller;
+            this.handler = handler;
+            this.args = args;
+            this.once = once;
+        }
+
+        public reset() {
+            this.caller = null;
+            // @ts-ignore
+            this.handler = null;
+            // @ts-ignore
+            this.args = null;
+            this.once = false;
+        }
+
+        public invoke() {
+            if ( this.handler ) {
+                this.handler.apply( this.caller, this.args );
+                if ( this.once ) {
+                    this.reset();
+                }
+            }
+        }
     }
 
     /**
@@ -19,7 +44,7 @@ export namespace delegates {
      */
     export class Delegates {
         /** 委托列表 */
-        private _list: IDelegate[];
+        private _list: Delegate[];
 
         /**
          * 当前委托数量
@@ -36,7 +61,17 @@ export namespace delegates {
          * 添加委托
          * @param d 委托
          */
-        public on( d: IDelegate ) {
+        public on( caller: any, handler: Function, ...args: any[] ) {
+            const d = create( caller, handler, args );
+            this.onto( d );
+        }
+
+        public once( caller: any, handler: Function, ...args: any[] ) {
+            const d = once( caller, handler, args );
+            this.onto( d );
+        }
+
+        public onto( d: Delegate ) {
             if ( this.seek( d ) < 0 ) {
                 this._list.push( d );
             }
@@ -51,7 +86,7 @@ export namespace delegates {
             const matches: number[] = array.pick_indexes(
                 this._list,
                 caller,
-                ( item: IDelegate ) => caller === item.caller && handler === item.handler,
+                ( item: Delegate ) => caller === item.caller && handler === item.handler,
             );
             if ( matches.length ) {
                 array.remove_indexes( this._list, matches );
@@ -62,8 +97,8 @@ export namespace delegates {
          * 移除委托
          * @param d 委托
          */
-        public off_by_delegate( d: IDelegate ) {
-            this.off( d.caller, d.handler );
+        public off_by_delegate( d: Delegate ) {
+            this.off( d.caller, d.handler! );
         }
 
         /**
@@ -74,7 +109,7 @@ export namespace delegates {
             const matches: number[] = array.pick_indexes(
                 this._list,
                 caller,
-                ( item: IDelegate ) => caller === item.caller,
+                ( item: Delegate ) => caller === item.caller,
             );
             if ( matches.length ) {
                 array.remove_indexes( this._list, matches );
@@ -91,10 +126,10 @@ export namespace delegates {
         /**
          * 激活委托
          */
-        public invoke(...args: any[]) {
-            for ( let i = 0, l = this._list.length, item: IDelegate; i < l; i++ ) {
+        public invoke( ...args: any[] ) {
+            for ( let i = 0, l = this._list.length, item: Delegate; i < l; i++ ) {
                 item = this._list[i];
-                item.handler.apply( item.caller, args.concat(item.args) );
+                item.handler!.apply( item.caller, args.concat( item.args ) );
                 if ( item.once ) {
                     this._list.splice( i, 1 );
                     --i;
@@ -106,10 +141,25 @@ export namespace delegates {
          * 查询委托
          * @param d 委托
          */
-        private seek( d: IDelegate ) {
+        private seek( d: Delegate ) {
             return this._list.findIndex(
                 ( v ) => v.caller === d.caller && v.handler === d.handler,
             );
         }
+
     }
+
+    export function create( caller: any, handler: Function, ...args: any[] ) {
+        const d = pool.factory.acquire( "delegate" );
+        d.set( caller, handler, args, false );
+        return d;
+    }
+
+    export function once( caller: any, handler: Function, ...args: any[] ) {
+        const d = pool.factory.acquire( "delegate" );
+        d.set( caller, handler, args, true );
+        return d;
+    }
+
+    pool.factory.inject_clazz( "delegate", Delegate, {} );
 }

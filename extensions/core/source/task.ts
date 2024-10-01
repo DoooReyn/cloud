@@ -5,8 +5,11 @@
 
 import { delegates } from "./delegates";
 import { logger } from "./logger";
+import { scheduler } from "./scheduler";
 
 export namespace task {
+
+
     interface IDelayDelegate {
         onstart?: Function;
         onabort?: Function;
@@ -39,26 +42,26 @@ export namespace task {
 
         constructor(
             private readonly $delay: number,
-            delegate: delegates.IDelegate,
+            delegate: delegates.Delegate,
         ) {
             this._flag = 0;
             this._state = "idle";
             this._handler = new delegates.Delegates();
             this._onstarts = new delegates.Delegates();
             this._onaborts = new delegates.Delegates();
-            this._handler.on( delegate );
+            this._handler.onto( delegate );
         }
 
-        public onbeforestart( d: delegates.IDelegate ) {
-            this._handler.on( d );
+        public onbeforestart( d: delegates.Delegate ) {
+            this._handler.onto( d );
         }
 
-        public onstart( d: delegates.IDelegate ) {
-            this._onstarts.on( d );
+        public onstart( d: delegates.Delegate ) {
+            this._onstarts.onto( d );
         }
 
-        public onabort( d: delegates.IDelegate ) {
-            this._onaborts.on( d );
+        public onabort( d: delegates.Delegate ) {
+            this._onaborts.onto( d );
         }
 
         public run() {
@@ -102,14 +105,14 @@ export namespace task {
         constructor(
             public readonly $step: string,
             $delay: number,
-            delegate: delegates.IDelegate,
+            delegate: delegates.Delegate,
         ) {
             super( $delay, delegate );
             this.prev_node = null;
             this.next_node = null;
             this._state = "idle";
-            this.onbeforestart( { caller: this, handler: this.start } );
-            this.onstart( { caller: this, handler: this.next } );
+            this.onbeforestart( delegates.create( this, this.start ) );
+            this.onstart( delegates.create( this, this.next ) );
         }
 
         private start() {
@@ -186,7 +189,7 @@ export namespace task {
             this._locked = false;
         }
 
-        public pipe( step: string, delay: number, delegate: delegates.IDelegate ) {
+        public pipe( step: string, delay: number, delegate: delegates.Delegate ) {
             if ( !this._locked ) {
                 const node = new TaskNode( step, delay, delegate );
                 if ( !this._head_node ) {

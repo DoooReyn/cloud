@@ -20,11 +20,11 @@ export namespace pool {
     /** 对象委托 */
     type FactoryDelegates = {
         /** 使用 */
-        on_acquire?: delegates.IDelegate,
+        on_acquire?: delegates.Delegate,
         /** 回收 */
-        on_recycle?: delegates.IDelegate,
+        on_recycle?: delegates.Delegate,
         /** 清理 */
-        on_abort?: delegates.IDelegate
+        on_abort?: delegates.Delegate
     }
 
     /** 对象池基类 */
@@ -52,15 +52,15 @@ export namespace pool {
             this._items = [];
             if ( delegate.on_acquire ) {
                 this._on_acquire = new delegates.Delegates();
-                this._on_acquire.on( delegate.on_acquire );
+                this._on_acquire.onto( delegate.on_acquire );
             }
             if ( delegate.on_recycle ) {
                 this._on_recycle = new delegates.Delegates();
-                this._on_recycle.on( delegate.on_recycle );
+                this._on_recycle.onto( delegate.on_recycle );
             }
             if ( delegate.on_abort ) {
                 this._on_abort = new delegates.Delegates();
-                this._on_abort.on( delegate.on_abort );
+                this._on_abort.onto( delegate.on_abort );
             }
         }
 
