@@ -33,13 +33,13 @@ export interface ILayerPreference {
 }
 
 class LayerHook {
-    public readonly on_began: delegates.Delegates = new delegates.Delegates();
-    public readonly on_move: delegates.Delegates = new delegates.Delegates();
-    public readonly on_ended: delegates.Delegates = new delegates.Delegates();
-    public readonly on_leave: delegates.Delegates = new delegates.Delegates();
-    public readonly on_enable: delegates.Delegates = new delegates.Delegates();
-    public readonly on_disable: delegates.Delegates = new delegates.Delegates();
-    public readonly on_destroy: delegates.Delegates = new delegates.Delegates();
+    public readonly on_began = new delegates.Delegates();
+    public readonly on_move = new delegates.Delegates();
+    public readonly on_ended = new delegates.Delegates();
+    public readonly on_leave = new delegates.Delegates();
+    public readonly on_enable = new delegates.Delegates();
+    public readonly on_disable = new delegates.Delegates();
+    public readonly on_destroy = new delegates.Delegates();
 }
 
 /**
@@ -182,7 +182,7 @@ export class UILayer extends Node {
         if ( !this.active ) return;
         cout( this, animate, () => {
             this.active = false;
-            this.hook.on_destroy.invoke( this );
+            this.hook.on_disable.invoke( this );
             oncomplete && oncomplete( this );
         } );
     }
@@ -225,6 +225,11 @@ export class UILayer extends Node {
         this.on( Node.EventType.TOUCH_MOVE, this.touch_moved, this );
         this.on( Node.EventType.CHILD_ADDED, this.check_visibility, this );
         this.on( Node.EventType.CHILD_REMOVED, this.check_visibility, this );
+        this.on( Node.EventType.NODE_DESTROYED, this.on_destruct, this );
+    }
+
+    private on_destruct() {
+        this.hook.on_destroy.invoke( this );
     }
 
     /**
