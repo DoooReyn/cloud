@@ -126,4 +126,13 @@ export namespace be {
     export function regex( v: any ) {
         return Object.prototype.toString.call( v ) === "[object RegExp]";
     }
+
+
+    /**
+     * 是否网址
+     * @param url 网址
+     */
+    export function is_url( url: string ) {
+        return url.indexOf( "://" ) > -1;
+    }
 }

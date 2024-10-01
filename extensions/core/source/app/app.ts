@@ -20,6 +20,7 @@ import { tips } from "./tips";
 import { datetime } from "../datetime";
 import { stat } from "./stat";
 import { Hierarchy } from "./hierarchy";
+import { UIBottomLayer } from "./layer/bottom";
 
 class AppHook {
     public on_engine_init: delegates.Delegates | null;
@@ -205,18 +206,7 @@ class App {
      * - top 顶层
      */
     protected build_hierarchy() {
-        Hierarchy.AddLayer( { name: "bottom", touch_cross: false, translucency: false, visible: true } );
-        Hierarchy.AddLayer( { name: "window", touch_cross: true, translucency: false, visible: true } );
-        Hierarchy.AddLayer( { name: "dialog", touch_cross: false, translucency: true, visible: false } );
-        Hierarchy.AddLayer( { name: "toast", touch_cross: true, translucency: false, visible: false } );
-        Hierarchy.AddLayer( { name: "waiting", touch_cross: false, translucency: false, visible: false } );
-        Hierarchy.AddLayer( { name: "guide", touch_cross: false, translucency: true, visible: false } );
-        Hierarchy.AddLayer( { name: "loading", touch_cross: false, translucency: true, visible: false } );
-        Hierarchy.AddLayer( { name: "transition", touch_cross: false, translucency: false, visible: false } );
-        Hierarchy.AddLayer( { name: "warning", touch_cross: false, translucency: true, visible: false } );
-        Hierarchy.AddLayer( { name: "top", touch_cross: false, translucency: false, visible: true } );
-        this.hierarchy = Hierarchy.Build( this.root! );
-        // this.hierarchy.bottom = new BottomLayer();
+        this.hierarchy = new Hierarchy(this.root!);
     }
 }
 
