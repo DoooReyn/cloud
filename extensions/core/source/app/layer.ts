@@ -254,32 +254,32 @@ export class UILayer extends Node {
     }
 
     private touch_began( touch: EventTouch ) {
-        const target = touch.currentTarget.name;
-        logger.ui.debug( target + " " + "触摸开始（落下）", touch );
+        // const target = touch.currentTarget.name;
+        // logger.ui.debug( target + tips.touch_began, touch );
         this.hook.on_began.invoke( touch );
         if ( !this.preference.touch_cross ) {
             touch.propagationStopped = true;
             touch.propagationImmediateStopped = true;
             touch.preventSwallow = false;
-            logger.ui.debug( target + " " + "禁止触摸继续传递" );
+            // logger.ui.debug( target + tips.touch_cross_not_allow );
         } else {
             touch.preventSwallow = true;
-            logger.ui.debug( target + " " + "允许触摸继续传递" );
+            // logger.ui.debug( target + tips.touch_cross_allow );
         }
     }
 
     private touch_ended( touch: EventTouch ) {
         this.hook.on_ended.invoke( touch );
-        logger.ui.debug( touch.currentTarget.name + "触摸结束（抬起）", touch );
+        // logger.ui.debug( touch.currentTarget.name + tips.touch_ended, touch );
     }
 
     private touch_leave( touch: EventTouch ) {
-        logger.ui.debug( touch.currentTarget.name + "触摸取消（离开）", touch );
+        // logger.ui.debug( touch.currentTarget.name + tips.touch_leave, touch );
         this.hook.on_leave.invoke( touch );
     }
 
     private touch_moved( touch: EventTouch ) {
-        logger.ui.debug( touch.currentTarget.name + "触摸移动（滑动）", touch );
+        // logger.ui.debug( touch.currentTarget.name + tips.touch_moved, touch );
         this.hook.on_move.invoke( touch );
     }
 }
