@@ -252,7 +252,6 @@ export namespace res {
                 this.load_image( abbr, ext ).then( ( img ) => {
                     if ( img ) {
                         const tex = new Texture2D();
-                        img.addRef();
                         tex.image = img;
                         tex.addRef();
                         this._assets.set( key, tex );
@@ -301,7 +300,7 @@ export namespace res {
                 return Promise.resolve( frame );
             }
 
-            // 最后去加载 Texture2D
+            // 最后去加载 SpriteFrame
             return new Promise<SpriteFrame | null>( ( res ) => {
                 this.load_image( abbr, ext ).then( ( img ) => {
                     if ( img ) {
@@ -310,7 +309,6 @@ export namespace res {
                         tex.image = img;
                         frame.texture = tex;
                         tex.addRef();
-                        img.addRef();
                         frame.addRef();
                         this._assets.set( tex_key, tex );
                         this._assets.set( key, frame );
@@ -324,7 +322,24 @@ export namespace res {
 
         private load_sprite_atlas( abbr: string, ext: "png" | "jpg" ) {
             return new Promise<SpriteAtlas | null>( res => {
-                return res( null );
+                const key = abbr + "/sprite-atlas";
+                if ( this._assets.has( key ) ) {
+                    const atlas = this._assets.get( key )! as SpriteAtlas;
+                    atlas.addRef();
+                    return res( atlas );
+                }
+
+                Promise.all( [ this.load_json( abbr ), this.load_sprite_frame( abbr, ext ) ] ).then( ( data ) => {
+                    const [ json, frame ] = data;
+                    if ( json && frame ) {
+                        const atlas = new SpriteAtlas();
+                        atlas.addRef();
+                        this._assets.set(key, atlas);
+                        return res( null );
+                    } else {
+                        return res( null );
+                    }
+                } );
             } );
         }
 
